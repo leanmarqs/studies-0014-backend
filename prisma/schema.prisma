@@ -8,13 +8,26 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
+
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
+// model User {
+//   id    Int    @id @default(autoincrement())
+//   name  String
+//   email String @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
 model User {
-  id    Int    @id @default(autoincrement())
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
   name  String
   email String @unique
   createdAt DateTime @default(now())
