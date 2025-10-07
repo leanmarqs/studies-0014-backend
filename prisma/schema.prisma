@@ -8,16 +8,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "mysql"
-//   url      = env("DATABASE_URL")
-// }
-
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("MONGO_DATABASE_URL")
 }
 
+/* Define your Mysql models here and run `prisma db push` to apply them to the database */
 // model User {
 //   id    Int    @id @default(autoincrement())
 //   name  String
@@ -26,10 +22,13 @@ datasource db {
 //   updatedAt DateTime @updatedAt
 // }
 
+
+/* Define your MongoDB models here and run `prisma db push` to apply them to the database */
 model User {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
   name  String
   email String @unique
+  password String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

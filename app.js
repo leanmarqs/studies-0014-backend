@@ -1,11 +1,14 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client'
 import cors from 'cors'
+import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 const app = express()
 const prisma = new PrismaClient()
 
 const PORT = process.env.PORT
+const LOCAL_HOST = process.env.LOCAL_HOST
 
 app.use(cors())
 app.use(express.json())
@@ -15,38 +18,6 @@ app.get('/', (req, res) => {
 
 })
 
-// CREATE
-app.post('/register', async (req, res) => {
-    const { name, email } = req.body
-
-    try{
-        const user = await prisma.user.create({
-        data: {
-            name,
-            email,
-        },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-        }
-    })
-
-    res.status(201).json({
-        message: 'User successfully created!',
-        user: user
-    })
-
-    }
-    catch(error){
-        res.status(500).json({
-            message: 'Failed to Create User!',
-            error: error.message,
-        })
-    }
-
-    
-})
 
 // READ
 app.get('/user/:id', async (req, res) => {
@@ -160,7 +131,7 @@ app.delete('/user/:id', async (req, res) => {
 })
 
 const server = app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`)
+    console.log(`Server running on ${LOCAL_HOST}:${PORT}`)
 })
 
 process.on('SIGINT', async () => {
