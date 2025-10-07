@@ -188,7 +188,7 @@ app.delete('/user/:id', async (req, res) => {
 })
 
 const server = app.listen(PORT, () => {
-    console.log(`Server running on ${LOCAL_HOST}`)
+    console.log(`Server running on ${GLOBAL_HOST}`)
 })
 
 process.on('SIGINT', async () => {
