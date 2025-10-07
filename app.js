@@ -9,6 +9,7 @@ const prisma = new PrismaClient()
 
 const PORT = process.env.PORT
 const LOCAL_HOST = process.env.LOCAL_HOST
+const GLOBAL_HOST = process.env.GLOBAL_HOST
 
 app.use(cors())
 app.use(express.json())
@@ -17,6 +18,52 @@ app.get('/', (req, res) => {
     res.send('Main Page')
 
 })
+
+// 🔹 Rota de criação de usuário
+app.post("/register", async (req, res) => {
+  const userSchema = z
+    .object({
+      name: z.string().min(2),
+      email: z.string().email(),
+      password: z.string().min(6),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "As senhas não coincidem",
+      path: ["confirmPassword"],
+    });
+
+  try {
+    const { name, email, password } = userSchema.parse(req.body);
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing)
+      return res.status(400).json({ message: "E-mail já cadastrado." });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: { name, email, password: hashed },
+      select: { id: true, name: true, email: true },
+    });
+
+    res.status(201).json({ message: "Usuário criado com sucesso!", user });
+  } catch (error) {
+    if (error?.issues) {
+      return res.status(400).json({
+        message: "Erro de validação",
+        errors: error.issues.map((e) => ({
+          field: e.path[0],
+          message: e.message,
+        })),
+      });
+    }
+    res.status(500).json({
+      message: "Falha ao criar usuário!",
+      error: error.message,
+    });
+  }
+});
 
 
 // READ
@@ -131,7 +178,7 @@ app.delete('/user/:id', async (req, res) => {
 })
 
 const server = app.listen(PORT, () => {
-    console.log(`Server running on ${LOCAL_HOST}:${PORT}`)
+    console.log(`Server running on ${GLOBAL_HOST}`)
 })
 
 process.on('SIGINT', async () => {
