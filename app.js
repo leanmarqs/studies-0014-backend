@@ -22,17 +22,26 @@ app.get('/', (req, res) => {
 // 🔹 Rota de criação de usuário
 app.post("/register", async (req, res) => {
   const userSchema = z
-    .object({
-      name: z.string().min(2),
-      email: z.string().email(),
-      password: z.string().min(6),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: "As senhas não coincidem",
-      path: ["confirmPassword"],
-    });
-
+  .object({
+    name: z
+      .string({ required_error: "O nome é obrigatório" })
+      .min(2, { message: "O nome deve ter no mínimo 2 caracteres" })
+      .max(100, { message: "O nome deve ter no máximo 100 caracteres" }),
+    email: z
+      .string({ required_error: "O e-mail é obrigatório" })
+      .email({ message: "E-mail inválido" }),
+    password: z
+      .string({ required_error: "A senha é obrigatória" })
+      .min(6, { message: "A senha deve ter no mínimo 6 caracteres" })
+      .max(16, { message: "A senha deve ter no máximo 16 caracteres" }),
+    confirmPassword: z
+      .string({ required_error: "A confirmação da senha é obrigatória" })
+      .max(16, { message: "A senha deve ter no máximo 16 caracteres" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
   try {
     const { name, email, password } = userSchema.parse(req.body);
 
@@ -48,6 +57,7 @@ app.post("/register", async (req, res) => {
     });
 
     res.status(201).json({ message: "Usuário criado com sucesso!", user });
+
   } catch (error) {
     if (error?.issues) {
       return res.status(400).json({
@@ -178,7 +188,7 @@ app.delete('/user/:id', async (req, res) => {
 })
 
 const server = app.listen(PORT, () => {
-    console.log(`Server running on ${GLOBAL_HOST}`)
+    console.log(`Server running on ${LOCAL_HOST}`)
 })
 
 process.on('SIGINT', async () => {
